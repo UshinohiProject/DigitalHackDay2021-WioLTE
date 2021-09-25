@@ -79,17 +79,22 @@ void loop() {
   
       delay(500);
 
-      // generate a sentence presenting data
-//      String message = "Value1: " + weight_1 + "Value2: " + weight_2;
-//      char data[] = message; // This have to be replaced
-      char data[] = "Activated!"; // This have to be replaced
+      // generate a json presenting data      
+      const int capacity_1 = JSON_OBJECT_SIZE(2);
+      StaticJsonDocument<capacity_1> json_request;
+      json_request["salt"] = weight_1;
+      json_request["suger"] = weight_2;
+      char buffer[255];
+      serializeJson(json_request, buffer, sizeof(buffer));
+
+  
       int status;
   
       SerialUSB.println("### Post.");
       SerialUSB.print("Post:");
-      SerialUSB.print(data);
+      SerialUSB.print(buffer);
       SerialUSB.println("");
-      if (!Wio.HttpPost(WEBHOOK_URL, data, &status)) {
+      if (!Wio.HttpPost(WEBHOOK_URL, buffer, &status)) {
         SerialUSB.println("###Webhook ERROR! ###");
         goto err_1;
       }
@@ -119,40 +124,53 @@ void loop() {
     if (weight_1 > 20 && weight_2 > 20) {
       delay(2000);
       continue;
-    }
+    } else {
 
-    while (true) {
-      delay(2000);
-      weight_1 = analogRead(PRESSURE_SENSOR_1);
-      weight_2 = analogRead(PRESSURE_SENSOR_2);
-      if (weight_1 < 20 || weight_2 < 20) {
-        continue;
+      while (true) {
+        delay(2000);
+        weight_1 = analogRead(PRESSURE_SENSOR_1);
+        weight_2 = analogRead(PRESSURE_SENSOR_2);
+  
+        SerialUSB.print("Value1: ");
+        SerialUSB.print(weight_1); 
+        SerialUSB.print(" Value2: ");
+        SerialUSB.println(weight_2); 
+        
+        if (weight_1 < 20 || weight_2 < 20) {
+          continue;
+        } else {
+
+          delay(500);
+
+          const int capacity_2 = JSON_OBJECT_SIZE(2);
+          StaticJsonDocument<capacity_2> json_request;
+          json_request["salt"] = weight_1;
+          json_request["suger"] = weight_2;
+          char buffer[255];
+          serializeJson(json_request, buffer, sizeof(buffer));
+
+      
+          int status;
+  
+          SerialUSB.println("### Post.");
+          SerialUSB.print("Post:");
+          SerialUSB.print(buffer);
+          SerialUSB.println("");
+          if (!Wio.HttpPost(WEBHOOK_URL, buffer, &status)) {
+            SerialUSB.println("###Webhook ERROR! ###");
+            goto err_2;
+          }
+          SerialUSB.print("Status:");
+          SerialUSB.println(status);
+
+          taken_weight_1 += initial_weight_1 - weight_1;
+          taken_weight_2 += initial_weight_2 - weight_2;
+  
+          err_2:
+            SerialUSB.println("### Wait.");
+            delay(INTERVAL);
+          }
+        }
       }
-    }
-  
-    delay(500);
-  
-//      String message = "Value1: " + weight_1 + "Value2: " + weight_2;
-//      char data[] = message; // This have to be replaced
-      char data[] = "Activated!"; // This have to be replaced
-    int status;
-  
-    SerialUSB.println("### Post.");
-    SerialUSB.print("Post:");
-    SerialUSB.print(data);
-    SerialUSB.println("");
-    if (!Wio.HttpPost(WEBHOOK_URL, data, &status)) {
-      SerialUSB.println("###Webhook ERROR! ###");
-      goto err_2;
-    }
-    SerialUSB.print("Status:");
-    SerialUSB.println(status);
-
-    taken_weight_1 += initial_weight_1 - weight_1;
-    taken_weight_2 += initial_weight_2 - weight_2;
-  
-    err_2:
-      SerialUSB.println("### Wait.");
-      delay(INTERVAL);
-  }
+   }
 }
