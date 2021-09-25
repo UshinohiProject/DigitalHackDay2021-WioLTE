@@ -18,6 +18,8 @@ const int sensorPin = A4; //pin A4 to read analog input
 int taken_weight_1 = 0;
 int taken_weight_2 = 0;
 
+unsigned long time_data = 0;
+
 WioLTE Wio;
   
 void setup() {
@@ -79,9 +81,11 @@ void loop() {
   
       delay(500);
 
-      // generate a json presenting data      
-      const int capacity_1 = JSON_OBJECT_SIZE(2);
+      // generate a json presenting data
+      time_data = millis();  
+      const int capacity_1 = JSON_OBJECT_SIZE(3);
       StaticJsonDocument<capacity_1> json_request;
+      json_request["timestamp"] = time_data;
       json_request["salt"] = weight_1;
       json_request["suger"] = weight_2;
       char buffer[255];
@@ -142,8 +146,10 @@ void loop() {
 
           delay(500);
 
-          const int capacity_2 = JSON_OBJECT_SIZE(2);
+          time_data = millis();
+          const int capacity_2 = JSON_OBJECT_SIZE(3);
           StaticJsonDocument<capacity_2> json_request;
+          json_request["timestamp"] = time_data;
           json_request["salt"] = weight_1;
           json_request["suger"] = weight_2;
           char buffer[255];
