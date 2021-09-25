@@ -14,8 +14,9 @@
 
 const int sensorPin = A4; //pin A4 to read analog input
 
-//Variables:
-int value; //save analog value
+// Initialize variables of the total taken weights
+int taken_weight_1 = 0;
+int taken_weight_2 = 0;
 
 WioLTE Wio;
   
@@ -49,18 +50,18 @@ void setup() {
   pinMode(PRESSURE_SENSOR_2, INPUT_ANALOG);
 
   SerialUSB.println("### Setup completed.");
+}
 
-
+void loop() {
+    int initial_weight_1;
+    int initial_weight_2;
+  
   // Start measuring weight
   
-  for (true) {
+  while (true) {
     // Read and save analog values from pressure sensors
     int weight_1 = analogRead(PRESSURE_SENSOR_1);
     int weight_2 = analogRead(PRESSURE_SENSOR_2);
-
-    // Initialize variables of the total taken weights
-    int taken_weight_1;
-    int taken_weight_2;
   
     SerialUSB.print("Value1: ");
     SerialUSB.print(weight_1); 
@@ -68,21 +69,72 @@ void setup() {
     SerialUSB.println(weight_2); 
 
     // Initial evaluation of the weighs
-    if (weight_1 < 20 || weight_2 < 20) {
+    if (weight_1 > 20 && weight_2 > 20) {
+  
+      delay(500);
+
+      // save the first recorded weight in a day
+      initial_weight_1 = weight_1;
+      initial_weight_2 = weight_2;
+  
+      delay(500);
+
+      // generate a sentence presenting data
+//      String message = "Value1: " + weight_1 + "Value2: " + weight_2;
+//      char data[] = message; // This have to be replaced
+      char data[] = "Activated!"; // This have to be replaced
+      int status;
+  
+      SerialUSB.println("### Post.");
+      SerialUSB.print("Post:");
+      SerialUSB.print(data);
+      SerialUSB.println("");
+      if (!Wio.HttpPost(WEBHOOK_URL, data, &status)) {
+        SerialUSB.println("###Webhook ERROR! ###");
+        goto err_1;
+      }
+      SerialUSB.print("Status:");
+      SerialUSB.println(status);
+      err_1:
+        SerialUSB.println("### Wait.");
+        delay(INTERVAL);
+      
+      break;
+    }
+    
+    delay(2000);
+  }
+    
+
+  while (true) {
+    int weight_1 = analogRead(PRESSURE_SENSOR_1);
+    int weight_2 = analogRead(PRESSURE_SENSOR_2);
+  
+    SerialUSB.print("Value1: ");
+    SerialUSB.print(weight_1); 
+    SerialUSB.print(" Value2: ");
+    SerialUSB.println(weight_2); 
+
+    // Initial evaluation of the weighs
+    if (weight_1 > 20 && weight_2 > 20) {
       delay(2000);
-      continue
+      continue;
+    }
+
+    while (true) {
+      delay(2000);
+      weight_1 = analogRead(PRESSURE_SENSOR_1);
+      weight_2 = analogRead(PRESSURE_SENSOR_2);
+      if (weight_1 < 20 || weight_2 < 20) {
+        continue;
+      }
     }
   
     delay(500);
-
-    // save the first recorded weight in a day
-    int initial_weight_1 = weight_1;
-    int initial_weight_2 = weight_2;
   
-    delay(500);
-
-    // generate a sentence presenting data
-    char data[] = "Value1: " + initial_weight_1 + "Value2: " + initial_weight_2;
+//      String message = "Value1: " + weight_1 + "Value2: " + weight_2;
+//      char data[] = message; // This have to be replaced
+      char data[] = "Activated!"; // This have to be replaced
     int status;
   
     SerialUSB.println("### Post.");
@@ -91,62 +143,16 @@ void setup() {
     SerialUSB.println("");
     if (!Wio.HttpPost(WEBHOOK_URL, data, &status)) {
       SerialUSB.println("###Webhook ERROR! ###");
-      goto err_1;
+      goto err_2;
     }
     SerialUSB.print("Status:");
     SerialUSB.println(status);
-err_1:
-  SerialUSB.println("### Wait.");
-  delay(INTERVAL);
-    
-  }
-}
 
-void loop() {
-  weight_1 = analogRead(PRESSURE_SENSOR_1);
-  weight_2 = analogRead(PRESSURE_SENSOR_2);
+    taken_weight_1 += initial_weight_1 - weight_1;
+    taken_weight_2 += initial_weight_2 - weight_2;
   
-  SerialUSB.print("Value1: ");
-  SerialUSB.print(weight_1); 
-  SerialUSB.print(" Value2: ");
-  SerialUSB.println(weight_2); 
-
-  // Initial evaluation of the weighs
-  if (weight_1 > 20 && weight_2 > 20) {
-    delay(2000);
-    continue
+    err_2:
+      SerialUSB.println("### Wait.");
+      delay(INTERVAL);
   }
-
-  for (true) {
-    delay(2000);
-    if (weight_1 < 20 || weight_2 < 20) {
-      continue
-    }
-  }
-  
-  delay(500);
-  
-  char data[] = "Value1: " + initial_weight_1 + "Value2: " + initial_weight_2;
-  int status;
-  
-  SerialUSB.println("### Post.");
-  SerialUSB.print("Post:");
-  SerialUSB.print(data);
-  SerialUSB.println("");
-  if (!Wio.HttpPost(WEBHOOK_URL, data, &status)) {
-    SerialUSB.println("###Webhook ERROR! ###");
-    goto err_2;
-  }
-  SerialUSB.print("Status:");
-  SerialUSB.println(status);
-
-  taken_weight_1 += initial_weight1 - weight_1;
-  taken_weight_2 += initial_weight2 - weight_2;
-  
-  weight_1 = analogRead(PRESSURE_SENSOR_1);
-  weight_2 = analogRead(PRESSURE_SENSOR_2);
-  
-  err_2:
-    SerialUSB.println("### Wait.");
-    delay(INTERVAL);
 }
