@@ -1,5 +1,6 @@
 #include <WioLTEforArduino.h>
 #include <stdio.h>
+#include <ArduinoJson.h>
 
 #define APN               "apn"
 #define USERNAME          "username"
@@ -7,8 +8,10 @@
 
 #define WEBHOOK_URL       "webhook_urrl"
 
-#define PRESSURE_SENSOR_1  (WioLTE::A4)
-#define PRESSURE_SENSOR_2  (WioLTE::A6)
+#define PRESSURE_SENSOR_1_CLK  (WioLTE::D20)
+#define PRESSURE_SENSOR_1_DAT  (WioLTE::D19)
+#define PRESSURE_SENSOR_2_CLK  (WioLTE::D38)
+#define PRESSURE_SENSOR_2_DAT  (WioLTE::D39)
 
 #define INTERVAL          (10000)
 
@@ -17,6 +20,9 @@ const int sensorPin = A4; //pin A4 to read analog input
 // Initialize variables of the total taken weights
 int taken_weight_1 = 0;
 int taken_weight_2 = 0;
+
+long pre_initial_weight_1 = 0;
+long pre_initial_weight_2 = 0;
 
 unsigned long time_data = 0;
 
@@ -47,23 +53,61 @@ void setup() {
     return;
   }
 
-  // set sensor pins as INPUT_ANALOG
-  pinMode(PRESSURE_SENSOR_1, INPUT_ANALOG);
-  pinMode(PRESSURE_SENSOR_2, INPUT_ANALOG);
+  SerialUSB.println("### Power supply ON.");
+  Wio.PowerSupplyGrove(true);
+  delay(500);
+ 
+  // set sensor pins as INPUT
+  pinMode(PRESSURE_SENSOR_1_CLK, OUTPUT);
+  pinMode(PRESSURE_SENSOR_1_DAT, INPUT);
+  pinMode(PRESSURE_SENSOR_2_CLK, OUTPUT);
+  pinMode(PRESSURE_SENSOR_2_DAT, INPUT);
 
   SerialUSB.println("### Setup completed.");
 }
 
 void loop() {
+    delay(800);
     int initial_weight_1;
     int initial_weight_2;
   
   // Start measuring weight
-  
+
+  // Initialize weight sensors    
+  for (char i = 0; i < 24; i++) {
+    digitalWrite(PRESSURE_SENSOR_1_CLK, 1);
+    digitalWrite(PRESSURE_SENSOR_2_CLK, 1);
+    delayMicroseconds(1);
+    digitalWrite(PRESSURE_SENSOR_1_CLK, 0);
+    digitalWrite(PRESSURE_SENSOR_2_CLK, 0);
+    delayMicroseconds(1);
+    pre_initial_weight_1 = (pre_initial_weight_1 << 1) | (digitalRead(PRESSURE_SENSOR_1_DAT));
+    pre_initial_weight_2 = (pre_initial_weight_2 << 1) | (digitalRead(PRESSURE_SENSOR_2_DAT));
+  }
+  pre_initial_weight_1 = pre_initial_weight_1 ^ 0x800000;
+  pre_initial_weight_2 = pre_initial_weight_2 ^ 0x800000;
+
   while (true) {
-    // Read and save analog values from pressure sensors
-    int weight_1 = analogRead(PRESSURE_SENSOR_1);
-    int weight_2 = analogRead(PRESSURE_SENSOR_2);
+    long recorded_weight_1 = 0;
+    long recorded_weight_2 = 0;
+    // Read and save analog values from pressure sensors   
+    for (char i = 0; i < 24; i++) {
+    digitalWrite(PRESSURE_SENSOR_1_CLK, 1);
+    digitalWrite(PRESSURE_SENSOR_2_CLK, 1);
+    delayMicroseconds(1);
+    digitalWrite(PRESSURE_SENSOR_1_CLK, 0);
+    digitalWrite(PRESSURE_SENSOR_2_CLK, 0);
+    delayMicroseconds(1);
+      recorded_weight_1 = (recorded_weight_1 << 1) | (digitalRead(PRESSURE_SENSOR_1_DAT));
+      recorded_weight_2 = (recorded_weight_2 << 1) | (digitalRead(PRESSURE_SENSOR_2_DAT));
+    }
+    recorded_weight_1 = recorded_weight_1 ^ 0x800000;
+    recorded_weight_2 = recorded_weight_2 ^ 0x800000;
+    
+    long weight_1;
+    long weight_2;
+    weight_1 = ((recorded_weight_1 - pre_initial_weight_1) / 1000) *2.2;
+    weight_2 = ((recorded_weight_2 - pre_initial_weight_2) / 1000) *2.2;
   
     SerialUSB.print("Value1: ");
     SerialUSB.print(weight_1); 
@@ -116,8 +160,26 @@ void loop() {
     
 
   while (true) {
-    int weight_1 = analogRead(PRESSURE_SENSOR_1);
-    int weight_2 = analogRead(PRESSURE_SENSOR_2);
+    long recorded_weight_1 = 0;
+    long recorded_weight_2 = 0;
+    // Read and save analog values from pressure sensors   
+    for (char i = 0; i < 24; i++) {
+    digitalWrite(PRESSURE_SENSOR_1_CLK, 1);
+    digitalWrite(PRESSURE_SENSOR_2_CLK, 1);
+    delayMicroseconds(1);
+    digitalWrite(PRESSURE_SENSOR_1_CLK, 0);
+    digitalWrite(PRESSURE_SENSOR_2_CLK, 0);
+    delayMicroseconds(1);
+      recorded_weight_1 = (recorded_weight_1 << 1) | (digitalRead(PRESSURE_SENSOR_1_DAT));
+      recorded_weight_2 = (recorded_weight_2 << 1) | (digitalRead(PRESSURE_SENSOR_2_DAT));
+    }
+    recorded_weight_1 = recorded_weight_1 ^ 0x800000;
+    recorded_weight_2 = recorded_weight_2 ^ 0x800000;
+    
+    long weight_1;
+    long weight_2;
+    weight_1 = ((recorded_weight_1 - pre_initial_weight_1) / 1000) *2.2;
+    weight_2 = ((recorded_weight_2 - pre_initial_weight_2) / 1000) *2.2;
   
     SerialUSB.print("Value1: ");
     SerialUSB.print(weight_1); 
@@ -132,8 +194,26 @@ void loop() {
 
       while (true) {
         delay(2000);
-        weight_1 = analogRead(PRESSURE_SENSOR_1);
-        weight_2 = analogRead(PRESSURE_SENSOR_2);
+        long recorded_weight_1 = 0;
+        long recorded_weight_2 = 0;
+        // Read and save analog values from pressure sensors   
+        for (char i = 0; i < 24; i++) {
+        digitalWrite(PRESSURE_SENSOR_1_CLK, 1);
+        digitalWrite(PRESSURE_SENSOR_2_CLK, 1);
+        delayMicroseconds(1);
+        digitalWrite(PRESSURE_SENSOR_1_CLK, 0);
+        digitalWrite(PRESSURE_SENSOR_2_CLK, 0);
+        delayMicroseconds(1);
+          recorded_weight_1 = (recorded_weight_1 << 1) | (digitalRead(PRESSURE_SENSOR_1_DAT));
+          recorded_weight_2 = (recorded_weight_2 << 1) | (digitalRead(PRESSURE_SENSOR_2_DAT));
+        }
+        recorded_weight_1 = recorded_weight_1 ^ 0x800000;
+        recorded_weight_2 = recorded_weight_2 ^ 0x800000;
+    
+        long weight_1;
+        long weight_2;
+        weight_1 = ((recorded_weight_1 - pre_initial_weight_1) / 1000) *2.2;
+        weight_2 = ((recorded_weight_2 - pre_initial_weight_2) / 1000) *2.2;
   
         SerialUSB.print("Value1: ");
         SerialUSB.print(weight_1); 
