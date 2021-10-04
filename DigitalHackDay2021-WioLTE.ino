@@ -15,8 +15,6 @@
 
 #define INTERVAL          (10000)
 
-const int sensorPin = A4; //pin A4 to read analog input
-
 // Initialize variables of the total taken weights
 int taken_weight_1 = 0;
 int taken_weight_2 = 0;
