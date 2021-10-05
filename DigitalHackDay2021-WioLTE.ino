@@ -15,6 +15,11 @@
 
 #define INTERVAL          (10000)
 
+#include <Wire.h>
+#include "rgb_lcd.h"
+
+const int sensorPin = A4; //pin A4 to read analog input
+
 // Initialize variables of the total taken weights
 int taken_weight_1 = 0;
 int taken_weight_2 = 0;
@@ -25,9 +30,10 @@ long pre_initial_weight_2 = 0;
 unsigned long time_data = 0;
 
 WioLTE Wio;
+
+rgb_lcd lcd;
   
 void setup() {
-  delay(200);
 
   SerialUSB.println("");
   SerialUSB.println("--- START ---------------------------------------------------");
@@ -38,6 +44,25 @@ void setup() {
   SerialUSB.println("### Power supply ON.");
   Wio.PowerSupplyLTE(true);
   delay(500);
+  
+  SerialUSB.println("### Power supply ON.");
+  Wio.PowerSupplyGrove(true);
+  delay(500);
+  
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  // Print a message to the LCD.
+  lcd.print("  Developed by");
+  lcd.setCursor(0, 1);
+  lcd.print("Ushinohi Project");
+  
+  delay(2000);
+  
+  lcd.clear();
+  // Print a message to the LCD.
+  lcd.print("Hi, I'm Kenko!");
+  lcd.setCursor(0, 1);
+  lcd.print("Nice to meet you");
 
   SerialUSB.println("### Turn on or reset.");
   if (!Wio.TurnOnOrReset()) {
@@ -110,7 +135,8 @@ void loop() {
     SerialUSB.print("Value1: ");
     SerialUSB.print(weight_1); 
     SerialUSB.print(" Value2: ");
-    SerialUSB.println(weight_2); 
+    SerialUSB.println(weight_2);
+    DisplayWeights(weight_1, weight_2);
 
     // Initial evaluation of the weighs
     if (weight_1 > 20 && weight_2 > 20) {
@@ -183,6 +209,7 @@ void loop() {
     SerialUSB.print(weight_1); 
     SerialUSB.print(" Value2: ");
     SerialUSB.println(weight_2); 
+    DisplayWeights(weight_1, weight_2);
 
     // Initial evaluation of the weighs
     if (weight_1 > 20 && weight_2 > 20) {
@@ -217,6 +244,7 @@ void loop() {
         SerialUSB.print(weight_1); 
         SerialUSB.print(" Value2: ");
         SerialUSB.println(weight_2); 
+        DisplayWeights(weight_1, weight_2);
         
         if (weight_1 < 20 || weight_2 < 20) {
           continue;
@@ -256,5 +284,36 @@ void loop() {
           }
         }
       }
+   }
+}
+
+void DisplayWeights(long weight_1, long weight_2){
+  char weight_1_digit = GetDigit(weight_1);
+  char weight_2_digit = GetDigit(weight_2);
+  
+  // Print a message to the LCD.
+  lcd.clear();
+  lcd.print("  salt    suger ");
+  lcd.setCursor(0, 1);
+  for (char i = 0; i < 4 - weight_1_digit; i++){
+    lcd.print(" ");
+  }
+  lcd.print(weight_1);
+  lcd.print(" g  ");
+  for (char i = 0; i < 4 - weight_2_digit; i++){
+    lcd.print(" ");
+  }
+  lcd.print(weight_2);
+  lcd.print(" g");
+  
+}
+
+char GetDigit(long num){
+   if (num == 0){
+    return 1; 
+   }else if (num < 0){
+    return 4;
+   } else {
+    return log10(num)+1;    
    }
 }
