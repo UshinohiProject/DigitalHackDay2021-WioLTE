@@ -109,22 +109,17 @@ void loop() {
     // Read and save analog values from pressure sensors
     recorded_weight_1 = GetWeights(pin_num_1);
     recorded_weight_2 = GetWeights(pin_num_2);
-    
-    
+
     long weight_1;
     long weight_2;
     weight_1 = ((recorded_weight_1 - pre_initial_weight_1) / 1000) *2.2;
     weight_2 = ((recorded_weight_2 - pre_initial_weight_2) / 1000) *2.2;
   
-    SerialUSB.print("Value1: ");
-    SerialUSB.print(weight_1); 
-    SerialUSB.print(" Value2: ");
-    SerialUSB.println(weight_2);
+    SerialPrint(weight_1, weight_2);
     DisplayWeights(weight_1, weight_2);
 
     // Initial evaluation of the weighs
     if (weight_1 > 20 && weight_2 > 20) {
-  
       delay(500);
 
       // save the first recorded weight in a day
@@ -135,7 +130,6 @@ void loop() {
       
       break;
     }
-    
     delay(2000);
   }
     
@@ -152,10 +146,7 @@ void loop() {
     weight_1 = ((recorded_weight_1 - pre_initial_weight_1) / 1000) *2.2;
     weight_2 = ((recorded_weight_2 - pre_initial_weight_2) / 1000) *2.2;
   
-    SerialUSB.print("Value1: ");
-    SerialUSB.print(weight_1); 
-    SerialUSB.print(" Value2: ");
-    SerialUSB.println(weight_2); 
+    SerialPrint(weight_1, weight_2);
     DisplayWeights(weight_1, weight_2);
 
     // Initial evaluation of the weighs
@@ -177,10 +168,7 @@ void loop() {
         weight_1 = ((recorded_weight_1 - pre_initial_weight_1) / 1000) *2.2;
         weight_2 = ((recorded_weight_2 - pre_initial_weight_2) / 1000) *2.2;
   
-        SerialUSB.print("Value1: ");
-        SerialUSB.print(weight_1); 
-        SerialUSB.print(" Value2: ");
-        SerialUSB.println(weight_2); 
+        SerialPrint(weight_1, weight_2);
         DisplayWeights(weight_1, weight_2);
         
         if (weight_1 < 20 || weight_2 < 20) {
@@ -271,7 +259,13 @@ void DisplayWeights(long weight_1, long weight_2){
   }
   lcd.print(weight_2);
   lcd.print(" g");
-  
+}
+
+void SerialPrint(long weight_1, long weight_2){
+  SerialUSB.print("Value1: ");
+  SerialUSB.print(weight_1);
+  SerialUSB.print(" Value2: ");
+  SerialUSB.println(weight_2);
 }
 
 char GetDigit(long num){
