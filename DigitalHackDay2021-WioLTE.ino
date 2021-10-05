@@ -114,6 +114,14 @@ void setup() {
 
     // Initial evaluation of the weighs
     if (weight_1 > 20 && weight_2 > 20) {
+      for (char i = 0; i < 4; i++) {
+        weight_1 = GetActualWeight(pin_num_1);
+        weight_2 = GetActualWeight(pin_num_2);
+    
+        SerialPrint(weight_1, weight_2);
+        DisplayWeights(weight_1, weight_2);
+        delay(500);
+      }
       // save the first recorded weight in a day
       initial_weight_1 = weight_1;
       initial_weight_2 = weight_2;
@@ -122,7 +130,7 @@ void setup() {
       
       initialization = true;
     }
-    delay(2000);
+    delay(500);
   }
   SerialUSB.println("Initial Weight Recorded");
 }
@@ -141,13 +149,13 @@ void loop() {
   if (weight_1 > 20 && weight_2 > 20) {
     SerialUSB.println("NOT USED");
     SerialUSB.println("--------");
-    delay(2000);
+    delay(500);
   } else {
     SerialUSB.println("USED");
     SerialUSB.println("----");
     bool seasoning_exist = false;
     while (!seasoning_exist) {
-      delay(2000);
+      delay(500);
     
       long weight_1;
       long weight_2;
@@ -160,6 +168,14 @@ void loop() {
       if (weight_1 < 20 || weight_2 < 20) {
         continue;
       } else {
+        for (char i = 0; i < 4; i++) {
+          weight_1 = GetActualWeight(pin_num_1);
+          weight_2 = GetActualWeight(pin_num_2);
+    
+          SerialPrint(weight_1, weight_2);
+          DisplayWeights(weight_1, weight_2);
+          delay(500);
+        }
         PostData(weight_1, weight_2);
     
         taken_weight_1 += initial_weight_1 - weight_1;
