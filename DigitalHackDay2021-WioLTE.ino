@@ -27,6 +27,9 @@ long taken_weight_2 = 0;
 long pre_initial_weight_1 = 0;
 long pre_initial_weight_2 = 0;
 
+long initial_weight_1 = 0;
+long initial_weight_2 = 0;
+
 char pin_num_1 = 20;
 char pin_num_2 = 38;
 
@@ -90,20 +93,16 @@ void setup() {
   pinMode(PRESSURE_SENSOR_2_DAT, INPUT);
 
   SerialUSB.println("### Setup completed.");
-}
 
-void loop() {
-    delay(800);
-    int initial_weight_1;
-    int initial_weight_2;
-  
-  // Start measuring weight
+  delay(800);
 
   // Initialize weight sensors
-    pre_initial_weight_1 = GetWeights(pin_num_1);
-    pre_initial_weight_2 = GetWeights(pin_num_2);
+  pre_initial_weight_1 = GetWeights(pin_num_1);
+  pre_initial_weight_2 = GetWeights(pin_num_2);
 
-  while (true) {
+  bool initialization = false;
+
+  while (!initialization) {
     long recorded_weight_1 = 0;
     long recorded_weight_2 = 0;
     // Read and save analog values from pressure sensors
@@ -120,69 +119,71 @@ void loop() {
 
     // Initial evaluation of the weighs
     if (weight_1 > 20 && weight_2 > 20) {
-      delay(500);
-
       // save the first recorded weight in a day
       initial_weight_1 = weight_1;
       initial_weight_2 = weight_2;
 
       PostData(weight_1, weight_2);
       
-      break;
+      initialization = true;
     }
     delay(2000);
   }
-    
+  SerialUSB.println("Initial Weight Recorded");
+}
 
-  while (true) {
-    long recorded_weight_1 = 0;
-    long recorded_weight_2 = 0;
-    // Read and save analog values from pressure sensors 
-    recorded_weight_1 = GetWeights(pin_num_1);
-    recorded_weight_2 = GetWeights(pin_num_2);
+void loop() {
+  long recorded_weight_1 = 0;
+  long recorded_weight_2 = 0;
+  // Read and save analog values from pressure sensors 
+  recorded_weight_1 = GetWeights(pin_num_1);
+  recorded_weight_2 = GetWeights(pin_num_2);
     
-    long weight_1;
-    long weight_2;
-    weight_1 = GetActualWeight(recorded_weight_1, pin_num_1);
-    weight_2 = GetActualWeight(recorded_weight_2, pin_num_2);
+  long weight_1;
+  long weight_2;
+  weight_1 = GetActualWeight(recorded_weight_1, pin_num_1);
+  weight_2 = GetActualWeight(recorded_weight_2, pin_num_2);
   
-    SerialPrint(weight_1, weight_2);
-    DisplayWeights(weight_1, weight_2);
+  SerialPrint(weight_1, weight_2);
+  DisplayWeights(weight_1, weight_2);
 
-    // Initial evaluation of the weighs
-    if (weight_1 > 20 && weight_2 > 20) {
+  // Initial evaluation of the weighs
+  if (weight_1 > 20 && weight_2 > 20) {
+    SerialUSB.println("NOT USED");
+    SerialUSB.println("--------");
+    delay(2000);
+  } else {
+    SerialUSB.println("USED");
+    SerialUSB.println("----");
+    bool seasoning_exist = false;
+    while (!seasoning_exist) {
       delay(2000);
-      continue;
-    } else {
-
-      while (true) {
-        delay(2000);
-        long recorded_weight_1 = 0;
-        long recorded_weight_2 = 0;
-        // Read and save analog values from pressure sensors
-        recorded_weight_1 = GetWeights(pin_num_1);
-        recorded_weight_2 = GetWeights(pin_num_2);
+      long recorded_weight_1 = 0;
+      long recorded_weight_2 = 0;
+      // Read and save analog values from pressure sensors
+      recorded_weight_1 = GetWeights(pin_num_1);
+      recorded_weight_2 = GetWeights(pin_num_2);
     
-        long weight_1;
-        long weight_2;
-        weight_1 = GetActualWeight(recorded_weight_1, pin_num_1);
-        weight_2 = GetActualWeight(recorded_weight_2, pin_num_2);
+      long weight_1;
+      long weight_2;
+      weight_1 = GetActualWeight(recorded_weight_1, pin_num_1);
+      weight_2 = GetActualWeight(recorded_weight_2, pin_num_2);
   
-        SerialPrint(weight_1, weight_2);
-        DisplayWeights(weight_1, weight_2);
+      SerialPrint(weight_1, weight_2);
+      DisplayWeights(weight_1, weight_2);
         
-        if (weight_1 < 20 || weight_2 < 20) {
-          continue;
-        } else {
-
-          PostData(weight_1, weight_2);
-
-          taken_weight_1 += initial_weight_1 - weight_1;
-          taken_weight_2 += initial_weight_2 - weight_2;
-          }
-        }
+      if (weight_1 < 20 || weight_2 < 20) {
+        continue;
+      } else {
+        PostData(weight_1, weight_2);
+    
+        taken_weight_1 += initial_weight_1 - weight_1;
+        taken_weight_2 += initial_weight_2 - weight_2;
+        
+        seasoning_exist = true;
       }
-   }
+    }
+  }
 }
 
 long GetWeights(char pin_num){
@@ -232,13 +233,11 @@ void PostData(long weight_1, long weight_2){
   SerialUSB.println("");
   if (!Wio.HttpPost(WEBHOOK_URL, buffer, &status)) {
     SerialUSB.println("###Webhook ERROR! ###");
-    goto err_1;
+    SerialUSB.println("### Wait.");
+    delay(INTERVAL);
   }
   SerialUSB.print("Status:");
   SerialUSB.println(status);
-  err_1:
-    SerialUSB.println("### Wait.");
-    delay(INTERVAL);
 }
 
 long GetActualWeight(long recorded_weight, char pin_num){
