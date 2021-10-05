@@ -125,7 +125,7 @@ void loop() {
     // Initial evaluation of the weighs
     if (weight_1 > 20 && weight_2 > 20) {
   
-      delay(1000);
+      delay(500);
 
       // save the first recorded weight in a day
       initial_weight_1 = weight_1;
@@ -160,7 +160,7 @@ void loop() {
       break;
     }
     
-    delay(500);
+    delay(2000);
   }
     
 
@@ -184,12 +184,12 @@ void loop() {
 
     // Initial evaluation of the weighs
     if (weight_1 > 20 && weight_2 > 20) {
-      delay(1000);
+      delay(2000);
       continue;
     } else {
 
       while (true) {
-        delay(1000);
+        delay(2000);
         long recorded_weight_1 = 0;
         long recorded_weight_2 = 0;
         // Read and save analog values from pressure sensors
