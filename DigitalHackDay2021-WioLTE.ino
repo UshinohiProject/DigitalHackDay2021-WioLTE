@@ -103,16 +103,11 @@ void setup() {
   bool initialization = false;
 
   while (!initialization) {
-    long recorded_weight_1 = 0;
-    long recorded_weight_2 = 0;
-    // Read and save analog values from pressure sensors
-    recorded_weight_1 = GetWeights(pin_num_1);
-    recorded_weight_2 = GetWeights(pin_num_2);
 
     long weight_1;
     long weight_2;
-    weight_1 = GetActualWeight(recorded_weight_1, pin_num_1);
-    weight_2 = GetActualWeight(recorded_weight_2, pin_num_2);
+    weight_1 = GetActualWeight(pin_num_1);
+    weight_2 = GetActualWeight(pin_num_2);
   
     SerialPrint(weight_1, weight_2);
     DisplayWeights(weight_1, weight_2);
@@ -133,16 +128,11 @@ void setup() {
 }
 
 void loop() {
-  long recorded_weight_1 = 0;
-  long recorded_weight_2 = 0;
-  // Read and save analog values from pressure sensors 
-  recorded_weight_1 = GetWeights(pin_num_1);
-  recorded_weight_2 = GetWeights(pin_num_2);
     
   long weight_1;
   long weight_2;
-  weight_1 = GetActualWeight(recorded_weight_1, pin_num_1);
-  weight_2 = GetActualWeight(recorded_weight_2, pin_num_2);
+    weight_1 = GetActualWeight(pin_num_1);
+    weight_2 = GetActualWeight(pin_num_2);
   
   SerialPrint(weight_1, weight_2);
   DisplayWeights(weight_1, weight_2);
@@ -158,16 +148,11 @@ void loop() {
     bool seasoning_exist = false;
     while (!seasoning_exist) {
       delay(2000);
-      long recorded_weight_1 = 0;
-      long recorded_weight_2 = 0;
-      // Read and save analog values from pressure sensors
-      recorded_weight_1 = GetWeights(pin_num_1);
-      recorded_weight_2 = GetWeights(pin_num_2);
     
       long weight_1;
       long weight_2;
-      weight_1 = GetActualWeight(recorded_weight_1, pin_num_1);
-      weight_2 = GetActualWeight(recorded_weight_2, pin_num_2);
+      weight_1 = GetActualWeight(pin_num_1);
+      weight_2 = GetActualWeight(pin_num_2);
   
       SerialPrint(weight_1, weight_2);
       DisplayWeights(weight_1, weight_2);
@@ -240,14 +225,17 @@ void PostData(long weight_1, long weight_2){
   SerialUSB.println(status);
 }
 
-long GetActualWeight(long recorded_weight, char pin_num){
+long GetActualWeight(char pin_num){
+  long recorded_weight = 0;
   long weight_coefficient = 0;
   long weight = 0;
   
   if (pin_num == 20){
+    recorded_weight = GetWeights(pin_num_1);
     weight_coefficient = 2.2;
     weight = ((recorded_weight - pre_initial_weight_1) / 1000) *weight_coefficient;
   } else {
+    recorded_weight = GetWeights(pin_num_2);
     weight_coefficient = 2.2;
     weight = ((recorded_weight - pre_initial_weight_2) / 1000) *weight_coefficient;    
   }
