@@ -125,13 +125,11 @@ void loop() {
     // Initial evaluation of the weighs
     if (weight_1 > 20 && weight_2 > 20) {
   
-      delay(500);
+      delay(1000);
 
       // save the first recorded weight in a day
       initial_weight_1 = weight_1;
       initial_weight_2 = weight_2;
-  
-      delay(500);
 
       // generate a json presenting data
       time_data = millis();  
@@ -142,7 +140,6 @@ void loop() {
       json_request["suger"] = weight_2;
       char buffer[255];
       serializeJson(json_request, buffer, sizeof(buffer));
-
   
       int status;
   
@@ -163,7 +160,7 @@ void loop() {
       break;
     }
     
-    delay(2000);
+    delay(500);
   }
     
 
@@ -187,12 +184,12 @@ void loop() {
 
     // Initial evaluation of the weighs
     if (weight_1 > 20 && weight_2 > 20) {
-      delay(2000);
+      delay(1000);
       continue;
     } else {
 
       while (true) {
-        delay(2000);
+        delay(1000);
         long recorded_weight_1 = 0;
         long recorded_weight_2 = 0;
         // Read and save analog values from pressure sensors
@@ -213,8 +210,6 @@ void loop() {
         if (weight_1 < 20 || weight_2 < 20) {
           continue;
         } else {
-
-          delay(500);
 
           time_data = millis();
           const int capacity_2 = JSON_OBJECT_SIZE(3);
