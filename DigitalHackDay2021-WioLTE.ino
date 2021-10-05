@@ -112,8 +112,8 @@ void loop() {
 
     long weight_1;
     long weight_2;
-    weight_1 = ((recorded_weight_1 - pre_initial_weight_1) / 1000) *2.2;
-    weight_2 = ((recorded_weight_2 - pre_initial_weight_2) / 1000) *2.2;
+    weight_1 = GetActualWeight(recorded_weight_1);
+    weight_2 = GetActualWeight(recorded_weight_2);
   
     SerialPrint(weight_1, weight_2);
     DisplayWeights(weight_1, weight_2);
@@ -143,8 +143,8 @@ void loop() {
     
     long weight_1;
     long weight_2;
-    weight_1 = ((recorded_weight_1 - pre_initial_weight_1) / 1000) *2.2;
-    weight_2 = ((recorded_weight_2 - pre_initial_weight_2) / 1000) *2.2;
+    weight_1 = GetActualWeight(recorded_weight_1);
+    weight_2 = GetActualWeight(recorded_weight_2);
   
     SerialPrint(weight_1, weight_2);
     DisplayWeights(weight_1, weight_2);
@@ -165,8 +165,8 @@ void loop() {
     
         long weight_1;
         long weight_2;
-        weight_1 = ((recorded_weight_1 - pre_initial_weight_1) / 1000) *2.2;
-        weight_2 = ((recorded_weight_2 - pre_initial_weight_2) / 1000) *2.2;
+        weight_1 = GetActualWeight(recorded_weight_1);
+        weight_2 = GetActualWeight(recorded_weight_2);
   
         SerialPrint(weight_1, weight_2);
         DisplayWeights(weight_1, weight_2);
@@ -239,6 +239,12 @@ void PostData(long weight_1, long weight_2){
   err_1:
     SerialUSB.println("### Wait.");
     delay(INTERVAL);
+}
+
+long GetActualWeight(recorded_weight){
+  long weight_coefficient = 2.2;
+  long weight = ((recorded_weight - pre_initial_weight_1) / 1000) *weight_coefficient;
+  return weight;
 }
 
 void DisplayWeights(long weight_1, long weight_2){
