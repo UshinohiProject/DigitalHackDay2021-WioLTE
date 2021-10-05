@@ -21,8 +21,8 @@
 const int sensorPin = A4; //pin A4 to read analog input
 
 // Initialize variables of the total taken weights
-int taken_weight_1 = 0;
-int taken_weight_2 = 0;
+long taken_weight_1 = 0;
+long taken_weight_2 = 0;
 
 long pre_initial_weight_1 = 0;
 long pre_initial_weight_2 = 0;
@@ -112,8 +112,8 @@ void loop() {
 
     long weight_1;
     long weight_2;
-    weight_1 = GetActualWeight(recorded_weight_1);
-    weight_2 = GetActualWeight(recorded_weight_2);
+    weight_1 = GetActualWeight(recorded_weight_1, pin_num_1);
+    weight_2 = GetActualWeight(recorded_weight_2, pin_num_2);
   
     SerialPrint(weight_1, weight_2);
     DisplayWeights(weight_1, weight_2);
@@ -143,8 +143,8 @@ void loop() {
     
     long weight_1;
     long weight_2;
-    weight_1 = GetActualWeight(recorded_weight_1);
-    weight_2 = GetActualWeight(recorded_weight_2);
+    weight_1 = GetActualWeight(recorded_weight_1, pin_num_1);
+    weight_2 = GetActualWeight(recorded_weight_2, pin_num_2);
   
     SerialPrint(weight_1, weight_2);
     DisplayWeights(weight_1, weight_2);
@@ -165,8 +165,8 @@ void loop() {
     
         long weight_1;
         long weight_2;
-        weight_1 = GetActualWeight(recorded_weight_1);
-        weight_2 = GetActualWeight(recorded_weight_2);
+        weight_1 = GetActualWeight(recorded_weight_1, pin_num_1);
+        weight_2 = GetActualWeight(recorded_weight_2, pin_num_2);
   
         SerialPrint(weight_1, weight_2);
         DisplayWeights(weight_1, weight_2);
@@ -241,9 +241,17 @@ void PostData(long weight_1, long weight_2){
     delay(INTERVAL);
 }
 
-long GetActualWeight(long recorded_weight){
-  long weight_coefficient = 2.2;
-  long weight = ((recorded_weight - pre_initial_weight_1) / 1000) *weight_coefficient;
+long GetActualWeight(long recorded_weight, char pin_num){
+  long weight_coefficient = 0;
+  long weight = 0;
+  
+  if (pin_num == 20){
+    weight_coefficient = 2.2;
+    weight = ((recorded_weight - pre_initial_weight_1) / 1000) *weight_coefficient;
+  } else {
+    weight_coefficient = 2.2;
+    weight = ((recorded_weight - pre_initial_weight_2) / 1000) *weight_coefficient;    
+  }
   return weight;
 }
 
