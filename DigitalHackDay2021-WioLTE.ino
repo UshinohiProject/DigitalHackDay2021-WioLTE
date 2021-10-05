@@ -241,7 +241,7 @@ void PostData(long weight_1, long weight_2){
     delay(INTERVAL);
 }
 
-long GetActualWeight(recorded_weight){
+long GetActualWeight(long recorded_weight){
   long weight_coefficient = 2.2;
   long weight = ((recorded_weight - pre_initial_weight_1) / 1000) *weight_coefficient;
   return weight;
