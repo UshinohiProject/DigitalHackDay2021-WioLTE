@@ -131,31 +131,7 @@ void loop() {
       initial_weight_1 = weight_1;
       initial_weight_2 = weight_2;
 
-      // generate a json presenting data
-      time_data = millis();  
-      const int capacity_1 = JSON_OBJECT_SIZE(3);
-      StaticJsonDocument<capacity_1> json_request;
-      json_request["timestamp"] = time_data;
-      json_request["salt"] = weight_1;
-      json_request["suger"] = weight_2;
-      char buffer[255];
-      serializeJson(json_request, buffer, sizeof(buffer));
-  
-      int status;
-  
-      SerialUSB.println("### Post.");
-      SerialUSB.print("Post:");
-      SerialUSB.print(buffer);
-      SerialUSB.println("");
-      if (!Wio.HttpPost(WEBHOOK_URL, buffer, &status)) {
-        SerialUSB.println("###Webhook ERROR! ###");
-        goto err_1;
-      }
-      SerialUSB.print("Status:");
-      SerialUSB.println(status);
-      err_1:
-        SerialUSB.println("### Wait.");
-        delay(INTERVAL);
+      PostData(weight_1, weight_2);
       
       break;
     }
@@ -211,35 +187,10 @@ void loop() {
           continue;
         } else {
 
-          time_data = millis();
-          const int capacity_2 = JSON_OBJECT_SIZE(3);
-          StaticJsonDocument<capacity_2> json_request;
-          json_request["timestamp"] = time_data;
-          json_request["salt"] = weight_1;
-          json_request["suger"] = weight_2;
-          char buffer[255];
-          serializeJson(json_request, buffer, sizeof(buffer));
-
-      
-          int status;
-  
-          SerialUSB.println("### Post.");
-          SerialUSB.print("Post:");
-          SerialUSB.print(buffer);
-          SerialUSB.println("");
-          if (!Wio.HttpPost(WEBHOOK_URL, buffer, &status)) {
-            SerialUSB.println("###Webhook ERROR! ###");
-            goto err_2;
-          }
-          SerialUSB.print("Status:");
-          SerialUSB.println(status);
+          PostData(weight_1, weight_2);
 
           taken_weight_1 += initial_weight_1 - weight_1;
           taken_weight_2 += initial_weight_2 - weight_2;
-  
-          err_2:
-            SerialUSB.println("### Wait.");
-            delay(INTERVAL);
           }
         }
       }
@@ -272,6 +223,34 @@ long GetWeights(char pin_num){
     measured_weight_2 = measured_weight_2 ^ 0x800000;
     return measured_weight_2;
   }
+}
+
+void PostData(long weight_1, long weight_2){
+  // generate a json presenting data
+  time_data = millis();  
+  const int capacity_1 = JSON_OBJECT_SIZE(3);
+  StaticJsonDocument<capacity_1> json_request;
+  json_request["timestamp"] = time_data;
+  json_request["salt"] = weight_1;
+  json_request["suger"] = weight_2;
+  char buffer[255];
+  serializeJson(json_request, buffer, sizeof(buffer));
+
+  int status;
+
+  SerialUSB.println("### Post.");
+  SerialUSB.print("Post:");
+  SerialUSB.print(buffer);
+  SerialUSB.println("");
+  if (!Wio.HttpPost(WEBHOOK_URL, buffer, &status)) {
+    SerialUSB.println("###Webhook ERROR! ###");
+    goto err_1;
+  }
+  SerialUSB.print("Status:");
+  SerialUSB.println(status);
+  err_1:
+    SerialUSB.println("### Wait.");
+    delay(INTERVAL);
 }
 
 void DisplayWeights(long weight_1, long weight_2){
