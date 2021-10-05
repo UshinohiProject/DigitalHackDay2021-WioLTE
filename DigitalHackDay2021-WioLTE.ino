@@ -27,6 +27,9 @@ int taken_weight_2 = 0;
 long pre_initial_weight_1 = 0;
 long pre_initial_weight_2 = 0;
 
+char pin_num_1 = 20;
+char pin_num_2 = 38;
+
 unsigned long time_data = 0;
 
 WioLTE Wio;
@@ -96,36 +99,17 @@ void loop() {
   
   // Start measuring weight
 
-  // Initialize weight sensors    
-  for (char i = 0; i < 24; i++) {
-    digitalWrite(PRESSURE_SENSOR_1_CLK, 1);
-    digitalWrite(PRESSURE_SENSOR_2_CLK, 1);
-    delayMicroseconds(1);
-    digitalWrite(PRESSURE_SENSOR_1_CLK, 0);
-    digitalWrite(PRESSURE_SENSOR_2_CLK, 0);
-    delayMicroseconds(1);
-    pre_initial_weight_1 = (pre_initial_weight_1 << 1) | (digitalRead(PRESSURE_SENSOR_1_DAT));
-    pre_initial_weight_2 = (pre_initial_weight_2 << 1) | (digitalRead(PRESSURE_SENSOR_2_DAT));
-  }
-  pre_initial_weight_1 = pre_initial_weight_1 ^ 0x800000;
-  pre_initial_weight_2 = pre_initial_weight_2 ^ 0x800000;
+  // Initialize weight sensors
+    pre_initial_weight_1 = GetWeights(pin_num_1);
+    pre_initial_weight_2 = GetWeights(pin_num_2);
 
   while (true) {
     long recorded_weight_1 = 0;
     long recorded_weight_2 = 0;
-    // Read and save analog values from pressure sensors   
-    for (char i = 0; i < 24; i++) {
-    digitalWrite(PRESSURE_SENSOR_1_CLK, 1);
-    digitalWrite(PRESSURE_SENSOR_2_CLK, 1);
-    delayMicroseconds(1);
-    digitalWrite(PRESSURE_SENSOR_1_CLK, 0);
-    digitalWrite(PRESSURE_SENSOR_2_CLK, 0);
-    delayMicroseconds(1);
-      recorded_weight_1 = (recorded_weight_1 << 1) | (digitalRead(PRESSURE_SENSOR_1_DAT));
-      recorded_weight_2 = (recorded_weight_2 << 1) | (digitalRead(PRESSURE_SENSOR_2_DAT));
-    }
-    recorded_weight_1 = recorded_weight_1 ^ 0x800000;
-    recorded_weight_2 = recorded_weight_2 ^ 0x800000;
+    // Read and save analog values from pressure sensors
+    recorded_weight_1 = GetWeights(pin_num_1);
+    recorded_weight_2 = GetWeights(pin_num_2);
+    
     
     long weight_1;
     long weight_2;
@@ -186,19 +170,9 @@ void loop() {
   while (true) {
     long recorded_weight_1 = 0;
     long recorded_weight_2 = 0;
-    // Read and save analog values from pressure sensors   
-    for (char i = 0; i < 24; i++) {
-    digitalWrite(PRESSURE_SENSOR_1_CLK, 1);
-    digitalWrite(PRESSURE_SENSOR_2_CLK, 1);
-    delayMicroseconds(1);
-    digitalWrite(PRESSURE_SENSOR_1_CLK, 0);
-    digitalWrite(PRESSURE_SENSOR_2_CLK, 0);
-    delayMicroseconds(1);
-      recorded_weight_1 = (recorded_weight_1 << 1) | (digitalRead(PRESSURE_SENSOR_1_DAT));
-      recorded_weight_2 = (recorded_weight_2 << 1) | (digitalRead(PRESSURE_SENSOR_2_DAT));
-    }
-    recorded_weight_1 = recorded_weight_1 ^ 0x800000;
-    recorded_weight_2 = recorded_weight_2 ^ 0x800000;
+    // Read and save analog values from pressure sensors 
+    recorded_weight_1 = GetWeights(pin_num_1);
+    recorded_weight_2 = GetWeights(pin_num_2);
     
     long weight_1;
     long weight_2;
@@ -221,19 +195,9 @@ void loop() {
         delay(2000);
         long recorded_weight_1 = 0;
         long recorded_weight_2 = 0;
-        // Read and save analog values from pressure sensors   
-        for (char i = 0; i < 24; i++) {
-        digitalWrite(PRESSURE_SENSOR_1_CLK, 1);
-        digitalWrite(PRESSURE_SENSOR_2_CLK, 1);
-        delayMicroseconds(1);
-        digitalWrite(PRESSURE_SENSOR_1_CLK, 0);
-        digitalWrite(PRESSURE_SENSOR_2_CLK, 0);
-        delayMicroseconds(1);
-          recorded_weight_1 = (recorded_weight_1 << 1) | (digitalRead(PRESSURE_SENSOR_1_DAT));
-          recorded_weight_2 = (recorded_weight_2 << 1) | (digitalRead(PRESSURE_SENSOR_2_DAT));
-        }
-        recorded_weight_1 = recorded_weight_1 ^ 0x800000;
-        recorded_weight_2 = recorded_weight_2 ^ 0x800000;
+        // Read and save analog values from pressure sensors
+        recorded_weight_1 = GetWeights(pin_num_1);
+        recorded_weight_2 = GetWeights(pin_num_2);
     
         long weight_1;
         long weight_2;
@@ -285,6 +249,34 @@ void loop() {
         }
       }
    }
+}
+
+long GetWeights(char pin_num){
+  if (pin_num == 20) {
+    long measured_weight_1 = 0;
+    // Read and save analog values from pressure sensors   
+    for (char i = 0; i < 24; i++) {
+    digitalWrite(PRESSURE_SENSOR_1_CLK, 1);
+    delayMicroseconds(1);
+    digitalWrite(PRESSURE_SENSOR_1_CLK, 0);
+    delayMicroseconds(1);
+      measured_weight_1 = (measured_weight_1 << 1) | (digitalRead(PRESSURE_SENSOR_1_DAT));
+    }
+    measured_weight_1 = measured_weight_1 ^ 0x800000;
+    return measured_weight_1;
+  } else {
+    long measured_weight_2 = 0;
+    // Read and save analog values from pressure sensors   
+    for (char i = 0; i < 24; i++) {
+    digitalWrite(PRESSURE_SENSOR_2_CLK, 1);
+    delayMicroseconds(1);
+    digitalWrite(PRESSURE_SENSOR_2_CLK, 0);
+    delayMicroseconds(1);
+      measured_weight_2 = (measured_weight_2 << 1) | (digitalRead(PRESSURE_SENSOR_2_DAT));
+    }
+    measured_weight_2 = measured_weight_2 ^ 0x800000;
+    return measured_weight_2;
+  }
 }
 
 void DisplayWeights(long weight_1, long weight_2){
