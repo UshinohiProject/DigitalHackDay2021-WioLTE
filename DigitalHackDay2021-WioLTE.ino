@@ -8,10 +8,10 @@
 
 #define WEBHOOK_URL       "webhook_urrl"
 
-#define PRESSURE_SENSOR_1_CLK  (WioLTE::D20)
-#define PRESSURE_SENSOR_1_DAT  (WioLTE::D19)
-#define PRESSURE_SENSOR_2_CLK  (WioLTE::D38)
-#define PRESSURE_SENSOR_2_DAT  (WioLTE::D39)
+#define PRESSURE_SENSOR_1_CLK  (WioLTE::D38)
+#define PRESSURE_SENSOR_1_DAT  (WioLTE::D39)
+#define PRESSURE_SENSOR_2_CLK  (WioLTE::D20)
+#define PRESSURE_SENSOR_2_DAT  (WioLTE::D19)
 
 #define INTERVAL          (10000)
 
@@ -188,31 +188,29 @@ void loop() {
 }
 
 long GetWeights(char pin_num){
+  long measured_weight = 0;
   if (pin_num == 20) {
-    long measured_weight_1 = 0;
     // Read and save analog values from pressure sensors   
     for (char i = 0; i < 24; i++) {
     digitalWrite(PRESSURE_SENSOR_1_CLK, 1);
     delayMicroseconds(1);
     digitalWrite(PRESSURE_SENSOR_1_CLK, 0);
     delayMicroseconds(1);
-      measured_weight_1 = (measured_weight_1 << 1) | (digitalRead(PRESSURE_SENSOR_1_DAT));
+      measured_weight = (measured_weight << 1) | (digitalRead(PRESSURE_SENSOR_1_DAT));
     }
-    measured_weight_1 = measured_weight_1 ^ 0x800000;
-    return measured_weight_1;
   } else {
-    long measured_weight_2 = 0;
     // Read and save analog values from pressure sensors   
     for (char i = 0; i < 24; i++) {
     digitalWrite(PRESSURE_SENSOR_2_CLK, 1);
     delayMicroseconds(1);
     digitalWrite(PRESSURE_SENSOR_2_CLK, 0);
     delayMicroseconds(1);
-      measured_weight_2 = (measured_weight_2 << 1) | (digitalRead(PRESSURE_SENSOR_2_DAT));
+      measured_weight = (measured_weight << 1) | (digitalRead(PRESSURE_SENSOR_2_DAT));
     }
-    measured_weight_2 = measured_weight_2 ^ 0x800000;
-    return measured_weight_2;
   }
+  measured_weight = measured_weight * (-1);
+  measured_weight = measured_weight ^ 0x800000;
+  return measured_weight;
 }
 
 void PostData(long weight_1, long weight_2){
