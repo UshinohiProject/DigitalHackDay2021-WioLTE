@@ -35,6 +35,11 @@ char pin_num_2 = 38;
 
 unsigned long time_data = 0;
 
+long weight_coefficient = 1;
+String seasoning_1 = "  salt  ";
+String seasoning_2 = " suger  ";
+
+
 WioLTE Wio;
 
 rgb_lcd lcd;
@@ -241,16 +246,13 @@ void PostData(long weight_1, long weight_2){
 
 long GetActualWeight(char pin_num){
   long recorded_weight = 0;
-  long weight_coefficient = 0;
   long weight = 0;
   
   if (pin_num == 20){
     recorded_weight = GetWeights(pin_num_1);
-    weight_coefficient = 2.2;
     weight = ((recorded_weight - pre_initial_weight_1) / 1000) *weight_coefficient;
   } else {
     recorded_weight = GetWeights(pin_num_2);
-    weight_coefficient = 2.2;
     weight = ((recorded_weight - pre_initial_weight_2) / 1000) *weight_coefficient;    
   }
   return weight;
@@ -262,7 +264,7 @@ void DisplayWeights(long weight_1, long weight_2){
   
   // Print a message to the LCD.
   lcd.clear();
-  lcd.print("  salt    suger ");
+  lcd.print(seasoning_1 + seasoning_2);
   lcd.setCursor(0, 1);
   for (char i = 0; i < 4 - weight_1_digit; i++){
     lcd.print(" ");
